@@ -1,0 +1,243 @@
+flow:
+  - pipelines/secret-providers:
+      method: PUT
+      parameters:
+        - local-vault
+      body:
+        type: vault
+        parameters:
+          vaultAddress: http://vault.default:8200
+          roleName: database
+          objects:
+            - objectName: credentials
+              secretPath: secret/data/db-credentials
+              secretKey: credentials
+      response:
+        body:
+          action_id: ${action_id}
+      awaits:
+        ref: deploy-status
+  - secrets:
+      method: PUT
+      body:
+        target-db:
+          TARGET_DB_USERNAME: default
+          TARGET_DB_PASSWORD: test
+      retries:
+        max: 3
+        delay:
+          min: 1
+          max: 20
+        until:
+          response:
+            status: 200
+  - pipelines/target/dry-run:
+      method: POST
+      body:
+        connection:
+          type: redis
+          host: ${HOST_IP}
+          port: 12000
+          user: ${TARGET_DB_USERNAME}
+          password: ${TARGET_DB_PASSWORD}
+      retries:
+        max: 3
+        delay:
+          min: 1
+          max: 7
+        until:
+          response:
+            body:
+              connected: true
+  - pipelines/targets:
+      method: PUT
+      parameters:
+        - target
+      body:
+        connection:
+          type: redis
+          host: ${HOST_IP}
+          port: 12000
+          user: ${TARGET_DB_USERNAME}
+          password: ${TARGET_DB_PASSWORD}
+      retries:
+        max: 3
+        delay:
+          min: 1
+          max: 7
+        until:
+          response:
+            body:
+              action_id: ${action_id}
+      awaits:
+        ref: deploy-status
+  - pipelines/sources/dry-run:
+      method: POST
+      body:
+        type: cdc
+        logging:
+          level: info
+        connection:
+          type: mysql
+          host: ${HOST_IP}
+          port: 14001
+          database: redislabscdc
+          user: ${secret:local-vault:credentials:user}
+          password: ${secret:local-vault:credentials:password}
+      response:
+        body:
+          connected: true
+  - pipelines/processors:
+      method: PUT
+      parameters:
+        - target_data_type
+      body:
+        value: hash
+      response:
+        body:
+          action_id: ${action_id}
+      awaits:
+        ref: deploy-status
+  - pipelines/processors:
+      method: PUT
+      parameters:
+        - wait_enabled
+      body:
+        value: false
+      response:
+        body:
+          action_id: ${action_id}
+      awaits:
+        ref: deploy-status
+  - pipelines/sources:
+      method: PUT
+      parameters:
+        - mysql
+      body:
+        type: cdc
+        logging:
+          level: info
+        connection:
+          type: mysql
+          host: ${HOST_IP}
+          port: 14001
+          database: redislabscdc
+          user: ${secret:local-vault:credentials:user}
+          password: ${secret:local-vault:credentials:password}
+      response:
+        body:
+          action_id: ${action_id}
+      awaits:
+        ref: deploy-status
+  - pipelines/sources:
+      method: GET
+      parameters:
+        - mysql
+        - schemas
+      response:
+        schemas:
+          "&has": redislabscdc
+  - pipelines/sources:
+      method: GET
+      parameters:
+        - mysql
+        - tables
+      response:
+        tables:
+          "&in": emp
+  - pipelines/sources:
+      method: PATCH
+      parameters:
+        - mysql
+      body:
+        active: true
+        tables:
+          redislabscdc.emp:
+            columns:
+              - empno
+              - fname
+      response:
+        body:
+          action_id: ${action_id}
+      awaits:
+        ref: deploy-status
+  - pipelines:
+      method: POST
+      parameters:
+        - start
+      response:
+        body:
+          action_id: ${action_id}
+      awaits:
+        ref: deploy-status
+  - pipelines:
+      method: POST
+      parameters:
+        - stop
+      response:
+        body:
+          action_id: ${action_id}
+      awaits:
+        ref: deploy-status
+  - pipelines:
+      method: POST
+      parameters:
+        - reset
+      response:
+        body:
+          action_id: ${action_id}
+      awaits:
+        ref: deploy-status
+  - monitoring/statistics:
+      method: GET
+      response:
+        body:
+          data_streams:
+            totals:
+              pending:
+                "&gt": 0
+              inserted: 0
+      retries:
+        max: 3
+        delay:
+          min: 1
+          max: 7
+        until:
+          response:
+            body:
+              data_streams:
+                totals:
+                  pending: 0
+                  inserted:
+                    "&gt": 0
+              snapshot_status: completed
+  - status:
+      method: GET
+      response:
+        body:
+          components:
+            collector-source:
+              status: ready
+refs:
+  deploy-status:
+    actions:
+      method: GET
+      parameters:
+        - ${action_id}
+      response:
+        body:
+          action_id: ${action_id}
+          status:
+            "&in":
+              - pending
+              - processing
+      retries:
+        max: 6
+        delay:
+          min: 3
+          max: 20
+        until:
+          response:
+            body:
+              action_id: ${action_id}
+              status: completed
