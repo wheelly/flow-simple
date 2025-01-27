@@ -1,14 +1,16 @@
 import logging
 import time
-from typing import Optional
+from typing import Callable, Optional
 
 import requests
-
 from flow_simple.types import StepTuple
 
 logger = logging.getLogger(__name__)
 
-def request_retry(request: dict, settings: dict) -> Optional[StepTuple]:
+def request_retry(
+    request_callback: Callable[[requests.request], requests.Response],
+    request_params: dict, settings: dict
+) -> Optional[StepTuple]:
     """Executes HTTP request with retries, raising TimeoutError after max attempts."""
     response_callback = settings.get("response_callback")
     until_response_callback = settings["until_response_callback"]
@@ -19,7 +21,7 @@ def request_retry(request: dict, settings: dict) -> Optional[StepTuple]:
     for attempt in range(max_retries):
         response = None
         try:
-            response = requests.request(**request, verify=False)
+            response = request_callback(**request_params)
         except OSError as e:
             logger.warning(f"Got exception: {e}. sleep for {delay_max_sec} seconds")
 
@@ -40,4 +42,4 @@ def request_retry(request: dict, settings: dict) -> Optional[StepTuple]:
             logger.info(f"Sleeping for {wait_time} seconds")
             time.sleep(wait_time)
 
-    raise TimeoutError(f"Not ready after {max_retries} attempts: {request['url']}")
+    raise TimeoutError(f"Not ready after {max_retries} attempts: {request_callback: Callable[[requests.request], requests.Respnse], request_params['url']}")

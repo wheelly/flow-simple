@@ -1,4 +1,5 @@
 mock==4.0.3
 pytest==7.2.0
-requests==2.31.0
-
+requests==2.32.0
+responses==0.25.6
+pytest_mock==3.14.0

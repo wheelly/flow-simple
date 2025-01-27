@@ -1,8 +1,9 @@
+import copy
 import logging
-from types import StepTuple
 from typing import Optional
 
-from response import create_response_callback
+from flow_simple.response.callback import create_response_callback
+from flow_simple.types import StepTuple
 
 logger = logging.getLogger(__name__)
 

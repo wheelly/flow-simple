@@ -1,20 +1,30 @@
+from collections.abc import Callable
 from typing import Generator
 
 import requests
-
 from flow_simple.request_retry import request_retry
 from flow_simple.types import StepTuple
 
 
-def run_flow(flow_iterator: Generator[StepTuple, None, None]):
-    """Test the flow by default on resourses/flow/github.yaml."""
-    for step in flow_iterator:
-        request_settings, response_settings = step
-        while True:
-            if isinstance(response_settings, dict):
-                additional_step = request_retry(request_settings, response_settings)
-            else:
-                additional_step = response_settings(requests.request(**request_settings, verify=False))
-            if not additional_step:
-                break
-            request_settings, response_settings = additional_step
+class FlowRunner:
+    """Runs every step of the flow."""
+    def __init__(
+        self,
+        flow_iterator: Generator[StepTuple, None, None],
+        request_callback: Callable[[requests.request], requests.Response] = requests.request
+    ):
+        self.flow_iterator = flow_iterator
+        self.request_callback = request_callback
+
+    def run(self):
+        """Test the flow by default on resourses/flow/github.yaml."""
+        for step in self.flow_iterator:
+            request_params, response_callback = step
+            while True:
+                if isinstance(response_callback, dict):
+                    additional_step = request_retry(self.request_callback, request_params, response_callback)
+                else:
+                    additional_step = response_callback(self.request_callback(**request_params))
+                if not additional_step:
+                    break
+                request_params, response_callback = additional_step
