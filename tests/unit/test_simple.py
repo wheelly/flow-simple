@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from typing import Any, List, Union
 
 import pytest
 import requests
@@ -6,7 +7,7 @@ import responses
 from flow_simple.flow_generator import flow_generator
 from flow_simple.runner import FlowRunner
 
-FLOW = {"flow": [], "base_url": "http://localhost/api/v1/"}
+FLOW : dict[str, Union[List[dict[str, Any]], str]] = {"flow": [], "base_url": "http://localhost/api/v1/"}
 
 @pytest.mark.parametrize(
     "steps, response_data",
@@ -35,11 +36,8 @@ def test_flow(steps: list[dict], response_data: dict):
     FLOW["flow"] = steps
     FlowRunner(flow_generator(FLOW), create_mock_response(json=response_data)).run()
 
-
-
-def create_mock_response(**kwargs) -> Callable[[requests.request], requests.Response]:
+def create_mock_response(**kwargs) -> Callable[..., requests.Response]:
     """Creates a mock response."""
-
     @responses.activate
     def mocked_response(**inner_kwargs) -> requests.Response:
         responses.add(method=inner_kwargs["method"], url=inner_kwargs["url"], json=kwargs["json"], status=kwargs.get("status", 200))

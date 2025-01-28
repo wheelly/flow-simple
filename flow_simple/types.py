@@ -1,5 +1,5 @@
-from typing import Callable, Tuple
+from typing import Callable, Optional, Tuple, Union
 
 import requests
 
-StepTuple = Tuple[dict, Callable[[requests.Response], None]]
+StepTuple = Tuple[dict, Union[dict, Callable[[requests.Response], Optional["StepTuple"]]]]

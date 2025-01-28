@@ -1,6 +1,7 @@
 import logging
 import time
-from typing import Callable, Optional
+from collections.abc import Callable
+from typing import Optional
 
 import requests
 from flow_simple.types import StepTuple
@@ -8,7 +9,7 @@ from flow_simple.types import StepTuple
 logger = logging.getLogger(__name__)
 
 def request_retry(
-    request_callback: Callable[[requests.request], requests.Response],
+    request_callback: Callable[..., requests.Response],
     request_params: dict, settings: dict
 ) -> Optional[StepTuple]:
     """Executes HTTP request with retries, raising TimeoutError after max attempts."""

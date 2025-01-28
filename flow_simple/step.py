@@ -26,16 +26,20 @@ class Step():
         """Parses the step configuration."""
         info = []
 
+        def new_step_callback(await_endpoint: str, await_params: dict) -> StepTuple:
+            """Creates a new step with await parameters and recursively calls Step.parse."""
+            return Step(await_endpoint, await_params).parse()
+
         if awaits := self.params.get("awaits"):
             info.append(f"Awaits: {awaits}")
             await_endpoint_or_ref, await_params_or_ref_name = next(iter(awaits.items()))
-            if await_endpoint_or_ref == "ref" and isinstance(await_params_or_ref_name, str):
+            if await_endpoint_or_ref == "ref" and isinstance(await_params_or_ref_name, str) and isinstance(self.refs, dict):
                 assert await_params_or_ref_name in self.refs, f"Reference '{await_params_or_ref_name}' not found"
                 await_ref_endpoint, await_ref_params = next(iter(self.refs[await_params_or_ref_name].items()))
                 info.append(f"ref resolved: {await_ref_endpoint} -> {await_ref_params}")
-                response = create_response_callback(self.params, await_ref_endpoint, copy.deepcopy(await_ref_params))
+                response = create_response_callback(self.params, new_step_callback, await_ref_endpoint, copy.deepcopy(await_ref_params))
             else:
-                response = create_response_callback(self.params, await_endpoint_or_ref, await_params_or_ref_name)
+                response = create_response_callback(self.params, new_step_callback, await_endpoint_or_ref, await_params_or_ref_name)
         else:
             response = create_response_callback(self.params)
 

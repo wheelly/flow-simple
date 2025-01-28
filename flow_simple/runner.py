@@ -11,7 +11,7 @@ class FlowRunner:
     def __init__(
         self,
         flow_iterator: Generator[StepTuple, None, None],
-        request_callback: Callable[[requests.request], requests.Response] = requests.request
+        request_callback: Callable[..., requests.Response] = requests.request
     ):
         self.flow_iterator = flow_iterator
         self.request_callback = request_callback
