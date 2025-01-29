@@ -8,16 +8,17 @@ from flow_simple.types import StepTuple
 logger = logging.getLogger(__name__)
 
 class Step():
-    def __init__(self, url: str, params: dict, refs: Optional[dict] = None):
+    def __init__(self, url: str, params: dict, refs: Optional[dict] = None, base_url: Optional[str] = None):
         """Initializes the Step object."""
         self.url = url
+        self.base_url = base_url
         self.params = params
         self.refs = refs
         if parameters := params.get("parameters"):
-            url += "/" + "/".join(parameters)
+            self.url += "/" + "/".join(parameters)
         self.request = {
             "method": params["method"],
-            "url": url,
+            "url": compile_url(self.base_url, self.url),
             "params": params.get("query"),
             "json": params.get("body")
         }
@@ -28,7 +29,7 @@ class Step():
 
         def new_step_callback(await_endpoint: str, await_params: dict) -> StepTuple:
             """Creates a new step with await parameters and recursively calls Step.parse."""
-            return Step(await_endpoint, await_params).parse()
+            return Step(await_endpoint, await_params, self.refs, self.base_url).parse()
 
         if awaits := self.params.get("awaits"):
             info.append(f"Awaits: {awaits}")
@@ -45,3 +46,7 @@ class Step():
 
         logger.debug(f"Step: {self.request} -> {response} {info}")
         return self.request, response
+
+def compile_url(base_url: Optional[str], url: str) -> str:
+    """Compiles the base url and the url."""
+    return (base_url.rstrip("/") if base_url else "") + "/"  + url.lstrip("/")

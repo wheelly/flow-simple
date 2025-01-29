@@ -20,6 +20,7 @@ def check_data(expected: dict, data: Any):
                         f"Variable '{value}' detected in expected data. Checking property existence in response data")
                     assert key in data and data[key], f"Key for variable {value} not found in response body"
                 else:
+                    assert key in data, f"Key '{key}' not found in response body"
                     logger.debug(f"{data[key]} == {value}")
                     assert data[key] == value
 

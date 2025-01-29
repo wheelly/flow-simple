@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 
 def request_retry(
     request_callback: Callable[..., requests.Response],
-    request_params: dict, settings: dict
+    request_params: dict,
+    settings: dict
 ) -> Optional[StepTuple]:
     """Executes HTTP request with retries, raising TimeoutError after max attempts."""
     response_callback = settings.get("response_callback")
@@ -18,9 +19,9 @@ def request_retry(
     delay_min_sec = settings["delay"]["min"]
     delay_max_sec = wait_time = settings["delay"]["max"]
     max_retries = settings["max"]
+    response: Optional[requests.Response] = None
 
     for attempt in range(max_retries):
-        response = None
         try:
             response = request_callback(**request_params)
         except OSError as e:
@@ -43,4 +44,4 @@ def request_retry(
             logger.info(f"Sleeping for {wait_time} seconds")
             time.sleep(wait_time)
 
-    raise TimeoutError(f"Not ready after {max_retries} attempts: {request_callback: Callable[[requests.request], requests.Respnse], request_params['url']}")
+    raise TimeoutError(f"Not ready after {max_retries} attempts: {request_params} got response {response}")

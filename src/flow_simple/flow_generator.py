@@ -12,7 +12,7 @@ def flow_generator(config: dict) -> Generator[StepTuple, None, None]:
     """Starts parsing the flow configuration and returns Generator."""
     flow = config["flow"]
     base_url = config.get("base_url", "")
-    refs = config.get("refs") or {}
+    refs = config.get("refs")
     for step in flow:
         url, params = next(iter(step.items()))
-        yield Step(base_url + url, params, refs).parse()
+        yield Step(url, params, refs, base_url).parse()
