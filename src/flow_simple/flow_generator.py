@@ -8,6 +8,7 @@ logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 def flow_generator(config: dict) -> Generator[StepTuple, None, None]:
     """Starts parsing the flow configuration and returns Generator."""
     flow = config["flow"]

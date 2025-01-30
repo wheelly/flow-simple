@@ -3,12 +3,14 @@ from typing import Any, List, Union
 
 logger = logging.getLogger(__name__)
 
+
 def check_data(expected: dict, data: Any):
     """Checks if the data is correct."""
     for key, value in expected.items():
         if key.startswith("&"):
             check_operator_expr(key, value, data)
         else:
+            assert key in data, f"Key '{key}' not found in response body"
             if isinstance(value, dict):
                 # recursion
                 check_data(value, data[key])
@@ -49,7 +51,7 @@ def check_operator_expr(key: str, expected: Any, data: Union[str, List[Any]]):
     elif operator == "in":
         logger.debug(f"{data} in {expected}")
         assert isinstance(expected, list), "Expected should be a list"
-        assert data in expected
+        assert data in expected, f"{data} in {expected}"
     elif operator == "nin":
         logger.debug(f"{data} not in {expected}")
         assert isinstance(expected, list), "Expected should be a list"

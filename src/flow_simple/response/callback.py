@@ -23,7 +23,9 @@ def create_response_callback(
     if retries:
         response_callback = validate(
             response_settings, new_step_callback, await_endpoint, await_params) if response_settings else None
-        until_response_callback = validate(retries["until"]["response"], new_step_callback, await_endpoint, await_params)
+        until_response_callback = validate(
+            retries["until"]["response"],
+            new_step_callback, await_endpoint, await_params)
         return {
             # it's intermediate response check which is optional
             "response_callback": response_callback,
@@ -36,5 +38,3 @@ def create_response_callback(
         }
 
     return validate(cast(dict, response_settings), new_step_callback, await_endpoint, await_params)
-
-

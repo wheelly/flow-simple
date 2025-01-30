@@ -8,6 +8,7 @@ from flow_simple.types import StepTuple
 
 class FlowRunner:
     """Runs every step of the flow."""
+
     def __init__(
         self,
         flow_iterator: Generator[StepTuple, None, None],

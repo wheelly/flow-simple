@@ -9,6 +9,7 @@ from flow_simple.variables import resolve_variables
 
 logger = logging.getLogger(__name__)
 
+
 def validate(
     response_settings: dict,
     new_step_callback: Optional[Callable[[str, dict], StepTuple]] = None,

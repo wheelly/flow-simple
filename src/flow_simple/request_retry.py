@@ -8,6 +8,7 @@ from flow_simple.types import StepTuple
 
 logger = logging.getLogger(__name__)
 
+
 def request_retry(
     request_callback: Callable[..., requests.Response],
     request_params: dict,
@@ -44,4 +45,5 @@ def request_retry(
             logger.info(f"Sleeping for {wait_time} seconds")
             time.sleep(wait_time)
 
-    raise TimeoutError(f"Not ready after {max_retries} attempts: {request_params} got response {response}")
+    raise TimeoutError(
+        f"Not ready after {max_retries} attempts: {request_params} got response {response} {response.json() if response else None}")
