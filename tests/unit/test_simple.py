@@ -31,8 +31,8 @@ FLOW: dict[str, Union[List[dict[str, Any]], str]] = {
                 "retries": {
                     "max": 3,  # we need 3 retries to test 3 different responses
                     "delay": {
-                        "min": 1,
-                        "max": 1
+                        "min": 2,
+                        "max": 5
                     },
                     "until": {
                         "response": {
