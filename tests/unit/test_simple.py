@@ -2,7 +2,6 @@ from typing import Any, List, Optional, Union
 
 import pytest
 import responses
-from flow_simple.flow_generator import flow_generator
 from flow_simple.runner import FlowRunner
 from flow_simple.step import compile_url
 from responses.registries import OrderedRegistry
@@ -171,4 +170,4 @@ def test_flow(steps: list[dict], mock_responses: list[dict], await_request_respo
                     json=response.get("body"),
                     status=response.get("status", 200)
                 )
-        FlowRunner(flow_generator(FLOW)).run()
+        FlowRunner(FLOW).run()

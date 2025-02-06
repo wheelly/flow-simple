@@ -22,9 +22,10 @@ def check_data(expected: dict, data: Any):
                         f"Variable '{value}' detected in expected data. Checking property existence in response data")
                     assert key in data and data[key], f"Key for variable {value} not found in response body"
                 else:
+                    assert isinstance(data, dict), "Data should be a dictionary"
                     assert key in data, f"Key '{key}' not found in response body"
-                    logger.debug(f"{data[key]} == {value}")
-                    assert data[key] == value
+                    assert type(data[key]) == type(value), f"{type(data[key])} == {type(value)}"
+                    assert data[key] == value, f"{data[key]} == {value}"
 
 
 def check_operator_expr(key: str, expected: Any, data: Union[str, List[Any]]):

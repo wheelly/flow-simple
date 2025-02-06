@@ -1,9 +1,8 @@
 from collections.abc import Callable
-from typing import Generator
 
 import requests
+from flow_simple.flow_generator import flow_generator
 from flow_simple.request_retry import request_retry
-from flow_simple.types import StepTuple
 
 
 class FlowRunner:
@@ -11,10 +10,10 @@ class FlowRunner:
 
     def __init__(
         self,
-        flow_iterator: Generator[StepTuple, None, None],
+        config: dict,
         request_callback: Callable[..., requests.Response] = requests.request
     ):
-        self.flow_iterator = flow_iterator
+        self.flow_iterator = flow_generator(config)
         self.request_callback = request_callback
 
     def run(self):
