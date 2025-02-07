@@ -1,5 +1,4 @@
 import logging
-import sys
 from collections.abc import Callable
 from typing import Dict, Optional, Tuple
 
@@ -18,8 +17,10 @@ def validate(
     await_params: Optional[dict] = None
 ) -> Callable[[requests.Response], Optional[StepTuple]]:
     """Prepares the response check."""
-    def check_response(external_checkers: Dict[str, ExternalChecker],
-                       response: requests.Response) -> Optional[StepTuple]:
+    def check_response(
+            external_checkers: Dict[str, ExternalChecker],
+            response: requests.Response
+    ) -> Optional[StepTuple]:
         """Checks if the response is correct."""
         if status := response_settings.get("status"):
             check_data({"status": status}, {"status": response.status_code})
