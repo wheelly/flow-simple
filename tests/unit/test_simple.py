@@ -143,6 +143,36 @@ def get_await_response(status: str) -> dict:
                 get_await_response("processing"),
                 get_await_response("completed"),
             ]
+        ),
+        # non-json response
+        (
+            [
+                {
+                    "html": {
+                        "method": "GET",
+                        "response": {
+                            "checker": "contains",
+                            "body": "<h1>Herman Melville - Moby-Dick</h1>"
+                        }
+                    }
+                }
+            ],
+            [
+                {
+                    "body":
+                    """
+                    <!DOCTYPE html>
+                    <html>
+                      <head>
+                      </head>
+                      <body>
+                          <h1>Herman Melville - Moby-Dick</h1>
+                      </body>
+                    </html>
+            """
+                }
+            ],
+            None
         )
     ]
 )
@@ -170,4 +200,9 @@ def test_flow(steps: list[dict], mock_responses: list[dict], await_request_respo
                     json=response.get("body"),
                     status=response.get("status", 200)
                 )
-        FlowRunner(FLOW).run()
+
+        def contains(expected: str, actual: str):
+            """Checks if the expected string is in the actual string."""
+            assert actual.find(expected) != -1, f"Expected {expected} in {actual}"
+
+        FlowRunner(FLOW, [contains]).run()

@@ -4,8 +4,16 @@ from typing import Any, List, Union
 logger = logging.getLogger(__name__)
 
 
-def check_data(expected: dict, data: Any):
+def check_data(expected: Any, data: Any):
     """Checks if the data is correct."""
+    if isinstance(expected, str):
+        assert expected == data, f"{expected} == {data}"
+        return
+
+    if isinstance(expected, list):
+        check_list(expected, data)
+        return
+
     for key, value in expected.items():
         if key.startswith("&"):
             check_operator_expr(key, value, data)

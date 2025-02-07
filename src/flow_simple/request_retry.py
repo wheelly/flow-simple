@@ -1,15 +1,16 @@
 import logging
 import time
 from collections.abc import Callable
-from typing import Optional
+from typing import Dict, Optional
 
 import requests
-from flow_simple.types import StepTuple
+from flow_simple.types import ExternalChecker, StepTuple
 
 logger = logging.getLogger(__name__)
 
 
 def request_retry(
+    external_checkers: Dict[str, ExternalChecker],
     request_callback: Callable[..., requests.Response],
     request_params: dict,
     settings: dict
@@ -37,11 +38,11 @@ def request_retry(
             continue
 
         try:
-            return until_response_callback(response)
+            return until_response_callback(external_checkers, response)
         except AssertionError:
             if response_callback:
                 logger.debug("Checking intermediate response")
-                response_callback(response)
+                response_callback(external_checkers, response)
             logger.info(f"Sleeping for {wait_time} seconds")
             time.sleep(wait_time)
 

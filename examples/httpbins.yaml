@@ -17,6 +17,12 @@ flow:
         id: 1
       response:
         status: 200
+  - html:
+      method: GET
+      response:
+        checker: contains
+        body: |-
+          <h1>Herman Melville - Moby-Dick</h1>
 
 #  - pipelines/secret-providers:
 #      method: PUT

@@ -5,8 +5,15 @@ from flow_simple import FlowRunner
 
 http_client.HTTPConnection.debuglevel = 1
 
+
 def test_example():
-    FlowRunner(read_yaml("./httpbins.yaml")).run()
+    """Runs the example."""
+    def contains(expected: str, actual: str):
+        """Checks if the expected string is in the actual string."""
+        assert actual.find(expected) != -1, f"Expected {expected} in {actual}"
+
+    FlowRunner(read_yaml("./httpbins.yaml"), [contains]).run()
+
 
 def read_yaml(file_path: str) -> dict:
     """Reads a YAML file and returns its content as a dictionary.
