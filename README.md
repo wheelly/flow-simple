@@ -63,6 +63,13 @@ refs:
               action_id: ${action_id}
               status: completed
 ```
+### Installation
+```shell
+  git clone https://github.com/wheelly/flow-simple
+  cd flow-simple
+  pip install -r requirements.txt
+```
+
 ### Example of usage
 ```python
 from flow_simple import FlowRunner
