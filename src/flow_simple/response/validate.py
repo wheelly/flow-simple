@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Callable
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, cast
 
 import requests
 from flow_simple.types import ExternalChecker, StepTuple
@@ -15,18 +15,19 @@ def validate(
     new_step_callback: Optional[Callable[[str, dict], StepTuple]] = None,
     await_endpoint: Optional[str] = None,
     await_params: Optional[dict] = None
-) -> Callable[[requests.Response], Optional[StepTuple]]:
+) -> Callable[[Dict[str, ExternalChecker], requests.Response], Optional[StepTuple]]:
     """Prepares the response check."""
     def check_response(
-            external_checkers: Dict[str, ExternalChecker],
-            response: requests.Response
+        external_checkers: Dict[str, ExternalChecker],
+        response: requests.Response
     ) -> Optional[StepTuple]:
         """Checks if the response is correct."""
         if status := response_settings.get("status"):
             check_data({"status": status}, {"status": response.status_code})
-        data = None
+
         if expected_body := response_settings.get("body"):
-            if response.headers.get("content-type", "").startswith("application/json"):
+            is_json = response.headers.get("content-type", "").startswith("application/json")
+            if is_json:
                 try:
                     data = response.json()
                 except ValueError as e:
@@ -40,10 +41,11 @@ def validate(
                 assert external_checker_name in external_checkers, f"Checker {external_checker_name} not found"
                 return external_checkers[external_checker_name](expected_body, data)
             check_data(expected_body, data)
-        if new_step_callback and await_endpoint and await_params:
-            resolve_variables(await_params, data)
-            logger.debug(f"Resolved await_params: {await_params}")
-            return new_step_callback(await_endpoint, await_params)
+            if new_step_callback and await_endpoint and await_params:
+                if is_json:
+                    resolve_variables(await_params, cast(dict[str, Any], data))
+                    logger.debug(f"Resolved await_params: {await_params}")
+                return new_step_callback(await_endpoint, await_params)
         return None
 
     return check_response

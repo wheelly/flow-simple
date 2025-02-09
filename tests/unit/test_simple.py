@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, cast
 
 import pytest
 import responses
@@ -6,7 +6,7 @@ from flow_simple.runner import FlowRunner
 from flow_simple.step import compile_url
 from responses.registries import OrderedRegistry
 
-FLOW: dict[str, Union[List[dict[str, Any]], str]] = {
+FLOW: dict[str, Union[List[dict[str, Any]], dict[str, dict[str, dict]], str]] = {
     "base_url": "http://localhost/api/v1/",
     "flow": [],
     "refs": {
@@ -51,7 +51,7 @@ FLOW: dict[str, Union[List[dict[str, Any]], str]] = {
 def get_await_response(status: str) -> dict:
     """Returns the await response."""
     return {
-        "url": compile_url(FLOW["base_url"], "actions/123"),
+        "url": compile_url(cast(str, FLOW["base_url"]), "actions/123"),
         "method": "GET",
         "body": {
             "action_id": "123",
@@ -182,7 +182,7 @@ def test_flow(steps: list[dict], mock_responses: list[dict], await_request_respo
     with responses.RequestsMock(registry=OrderedRegistry) as rsps:
         for i, step in enumerate(steps):
             endpoint, props = next(iter(step.items()))
-            url = compile_url(FLOW["base_url"], endpoint)
+            url = compile_url(cast(str, FLOW["base_url"]), endpoint)
             # TODO: copypast from step - remove next to lines
             if parameters := props.get("parameters"):
                 url += "/" + "/".join(parameters)

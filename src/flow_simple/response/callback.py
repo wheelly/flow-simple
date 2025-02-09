@@ -1,9 +1,9 @@
 import logging
-from typing import Callable, Optional, Tuple, Union, cast
+from typing import Callable, Dict, Optional, Tuple, Union, cast
 
 import requests
 from flow_simple.response.validate import validate
-from flow_simple.types import StepTuple
+from flow_simple.types import ExternalChecker, StepTuple
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ def create_response_callback(
     new_step_callback: Optional[Callable[[str, dict], StepTuple]] = None,
     await_endpoint: Optional[str] = None,
     await_params: Optional[dict] = None
-) -> Union[dict, Callable[[requests.Response], Optional[StepTuple]]]:
+) -> Union[dict, Callable[[Dict[str, ExternalChecker], requests.Response], Optional[StepTuple]]]:
     """Parses the response configuration and create callback to outer code."""
     response_settings: Optional[dict] = settings.get("response")
     retries = settings.get("retries")
