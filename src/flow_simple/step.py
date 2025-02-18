@@ -3,7 +3,6 @@ import logging
 from typing import Callable, Optional
 
 import requests
-
 from flow_simple.request_retry import request_retry
 from flow_simple.response.callback import create_response_callback
 from flow_simple.types import ExternalChecker, StepTuple
@@ -54,7 +53,6 @@ class Step():
 
         logger.debug(f"Step: {self.request} -> {response} {info}")
         return self.request, response
-
 
     def run(self, checkers_map: dict[str, ExternalChecker], request_callback: Callable[..., requests.Response]):
         """Runs the step."""

@@ -1,12 +1,6 @@
-import logging
 from typing import Generator
 
 from flow_simple.step import Step
-from flow_simple.types import StepTuple
-
-logging.basicConfig()
-logging.getLogger().setLevel(logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 
 def flow_generator(config: dict) -> Generator[Step, None, None]:
