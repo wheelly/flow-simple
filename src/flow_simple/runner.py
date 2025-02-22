@@ -1,6 +1,5 @@
 import logging
 from collections.abc import Callable
-from typing import Any, List, Optional
 
 import requests
 from flow_simple.flow_generator import flow_generator
@@ -17,11 +16,9 @@ class FlowRunner:
         request_callback: Callable[..., requests.Response] = requests.request
     ):
         """Initializes the FlowRunner."""
-
-        self.flow_iterator = flow_generator(config)
-        self.request_callback = request_callback
+        self.flow_iterator = flow_generator(config, request_callback)
 
     def run(self):
         """Test the flow by default on resourses/flow/github.yaml."""
         for step in self.flow_iterator:
-            step.run(self.request_callback)
+            step.run()

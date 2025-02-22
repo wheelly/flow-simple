@@ -11,12 +11,20 @@ logger = logging.getLogger(__name__)
 
 
 class Step():
-    def __init__(self, url: str, params: dict, refs: Optional[dict] = None, base_url: Optional[str] = None):
+    def __init__(
+        self,
+        url: str,
+        params: dict,
+        refs: Optional[dict] = None,
+        base_url: Optional[str] = None,
+        request_callback: Callable[..., requests.Response] = requests.request
+    ):
         """Initializes the Step object."""
         self.url = url
         self.base_url = base_url
         self.params = params
         self.refs = refs
+        self.request_callback = request_callback
         if parameters := params.get("parameters"):
             self.url += "/" + "/".join(parameters)
         self.request = {
@@ -54,7 +62,7 @@ class Step():
         logger.debug(f"Step: {self.request} -> {response} {info}")
         return self.request, response
 
-    def run(self, request_callback: Callable[..., requests.Response]):
+    def run(self):
         """Runs the step."""
         request_params, response_callback = self.parse()
 
@@ -62,13 +70,18 @@ class Step():
         while True:
             if isinstance(response_callback, dict):
                 # retrying if response is dict and has retries settings
-                additional_step = request_retry(request_callback, request_params, response_callback)
+                additional_step = request_retry(self.request_callback, request_params, response_callback)
             else:
                 # child endpoint (no special use for it now - the same as the next endpoint in the flow)
-                additional_step = response_callback(request_callback(**request_params))
+                additional_step = response_callback(self.request_callback(**request_params))
             if not additional_step:
                 break
             request_params, response_callback = additional_step
+
+    def __str__(self) -> str:
+        """Returns the string representation of the Step object."""
+        method = self.params.get("method", "GET")
+        return f"Step({method}:{self.url})"
 
 
 def compile_url(base_url: Optional[str], url: str) -> str:
