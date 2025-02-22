@@ -1,9 +1,10 @@
 import logging
 from collections.abc import Callable
-from typing import Any, Dict, Optional, cast
+from typing import Any, Optional, cast
 
 import requests
-from flow_simple.types import ExternalChecker, StepTuple
+from flow_simple.response.import_function import import_function
+from flow_simple.types import StepTuple
 from flow_simple.validator import check_data
 from flow_simple.variables import resolve_variables
 
@@ -15,10 +16,9 @@ def validate(
     new_step_callback: Optional[Callable[[str, dict], StepTuple]] = None,
     await_endpoint: Optional[str] = None,
     await_params: Optional[dict] = None
-) -> Callable[[Dict[str, ExternalChecker], requests.Response], Optional[StepTuple]]:
+) -> Callable[[requests.Response], Optional[StepTuple]]:
     """Prepares the response check."""
     def check_response(
-        external_checkers: Dict[str, ExternalChecker],
         response: requests.Response
     ) -> Optional[StepTuple]:
         """Checks if the response is correct."""
@@ -36,10 +36,9 @@ def validate(
                     assert False, f"Response is not a valid JSON: {e}"
             else:
                 data = response.text
-            if external_checker_name := response_settings.get("checker"):
-                logger.debug(f"Using external checker {external_checker_name}")
-                assert external_checker_name in external_checkers, f"Checker {external_checker_name} not found"
-                return external_checkers[external_checker_name](expected_body, data)
+            if function := response_settings.get("function"):
+                custom_validator = import_function(function)
+                return custom_validator(response, expected_body)
             check_data(expected_body, data)
             if new_step_callback and await_endpoint and await_params:
                 if is_json:
