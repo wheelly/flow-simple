@@ -13,7 +13,7 @@ def import_function(dotted_module_function: str) -> Callable[[Response, Any], No
     Returns:
         Callable: Imported function.
     """
-    tokens = dotted_module_function.rsplit(".")
+    tokens = dotted_module_function.split(".")
     module = importlib.import_module(".".join(tokens[:-1]))
     assert hasattr(module, tokens[-1]), f"Function {tokens[-1]} not found in module {module}"
     function = getattr(module, tokens[-1])
