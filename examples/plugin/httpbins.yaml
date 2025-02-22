@@ -20,7 +20,7 @@ flow:
   - html:
       method: GET
       response:
-        checker: contains
+        function: checkers.contains
         body: |-
           <h1>Herman Melville - Moby-Dick</h1>
 

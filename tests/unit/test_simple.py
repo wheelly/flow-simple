@@ -151,7 +151,7 @@ def get_await_response(status: str) -> dict:
                     "html": {
                         "method": "GET",
                         "response": {
-                            "checker": "contains",
+                            "function": "checkers.contains",
                             "body": "<h1>Herman Melville - Moby-Dick</h1>"
                         }
                     }
@@ -201,8 +201,4 @@ def test_flow(steps: list[dict], mock_responses: list[dict], await_request_respo
                     status=response.get("status", 200)
                 )
 
-        def contains(expected: str, actual: str):
-            """Checks if the expected string is in the actual string."""
-            assert actual.find(expected) != -1, f"Expected {expected} in {actual}"
-
-        FlowRunner(FLOW, [contains]).run()
+        FlowRunner(FLOW).run()

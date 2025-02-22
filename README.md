@@ -70,26 +70,22 @@ refs:
   pip install -r requirements.txt
 ```
 
-### Example of usage
+### Example of usage in the test as plugin
 ```python
-from flow_simple import FlowRunner
-
-def test_example():
-    """Runs the example."""
-    def contains(expected: str, actual: str):
-        """Checks if the expected string is in the actual string."""
-        assert actual.find(expected) != -1, f"Expected {expected} in {actual}"
-
-    FlowRunner(read_yaml("./httpbins.yaml"), [contains]).run()
+def get_flow() -> dict:
+    """Returns a flow configuration - this method required by plugin."""
+    path_to_yaml = os.path.join(os.path.dirname(__file__), "httpbins.yaml")
+    # Use anything here not necessary to read from yaml file
+    return read_yaml(path_to_yaml)
 ```
 
 ### Example of execution
 ```shell
-  PYTHONPATH="./src" pytest ./examples/test_example.py
+PYTHONPATH="./src" pytest -v -p flow_simple.pytest_plugin ./examples/plugin/test_example.py
 ```
 
 ### Testing
 
 ```shell
-  PYTHONPATH="./src" pytest ./tests
+PYTHONPATH="./src" pytest ./tests
 ```
