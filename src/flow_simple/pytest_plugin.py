@@ -6,7 +6,7 @@ from flow_simple.step import Step
 
 
 def pytest_pycollect_makemodule(module_path: PosixPath, parent: pytest.Module):
-    # pdb.set_trace()
+    """Executes get_flow function from the module giving back dict with test configuration."""
     module = pytest.Module.from_parent(parent, path=module_path)
     get_flow = getattr(module.module, "get_flow", None)
     if get_flow is None:
@@ -17,6 +17,7 @@ def pytest_pycollect_makemodule(module_path: PosixPath, parent: pytest.Module):
 
 
 class FlowCollector(pytest.Collector):
+    """Collects the test items."""
     def __init__(self, name, parent, steps):
         super().__init__(name, parent)
         self.steps = steps
@@ -27,15 +28,11 @@ class FlowCollector(pytest.Collector):
 
 
 class StepItem(pytest.Item):
+    """A single test item."""
     def __init__(self, name, parent: pytest.Module, step: Step):
         super().__init__(name, parent)
         self.step = step
 
     def runtest(self):
+        """Execute the test item."""
         self.step.run()
-
-    # def repr_failure(self, excinfo):
-    #     return f"{self.name} - Failure: {excinfo.value}"
-    #
-    # def reportinfo(self):
-    #     return self.fspath, 0, f"custom test: {self.name}"
